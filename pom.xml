@@ -1,10 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>com.extendedclip.papi.expansion.worldguard</groupId>
   <artifactId>worldguard-expansion</artifactId>
   <version>1.1.0</version>
+  <packaging>jar</packaging>
+
   <name>Expansion-WorldGuard</name>
   <description>PlaceholderAPI expansion for WorldGuard placeholders</description>
 
@@ -28,7 +31,7 @@
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
       <version>1.13-R0.1-SNAPSHOT</version>
-      <scope>compile</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>me.clip</groupId>
@@ -39,13 +42,7 @@
     <dependency>
       <groupId>com.sk89q.worldguard</groupId>
       <artifactId>worldguard-legacy</artifactId>
-      <version>LATEST</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.sk89q.worldedit</groupId>
-      <artifactId>worldedit-core</artifactId>
-      <version>LATEST</version>
+      <version>6.2</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -66,6 +63,7 @@
           </archive>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>

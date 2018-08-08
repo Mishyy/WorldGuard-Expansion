@@ -23,89 +23,18 @@ package com.extendedclip.papi.expansion.worldguard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import java.util.Set;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
+
+import java.util.Set;
 
 public class WorldGuardExpansion extends PlaceholderExpansion {
 
-  private final String NAME = "WorldGuard";
-  private final String IDENTIFIER = NAME.toLowerCase();
+  private final String NAME = "WorldGuard", IDENTIFIER = NAME.toLowerCase();
   private final String VERSION = getClass().getPackage().getImplementationVersion();
-
   private WorldGuardPlugin worldguard;
-
-  @Override
-  public boolean canRegister() {
-    worldguard = (WorldGuardPlugin) Bukkit.getServer().getPluginManager().getPlugin(NAME);
-    return worldguard != null;
-  }
-
-  @Override
-  public String onRequest(OfflinePlayer offlinePlayer, String params) {
-
-    ProtectedRegion r;
-
-    if (params.contains(":")) {
-      String[] args = params.split(":");
-      params = args[0];
-      r = getRegion(deserializeLoc(args[1]));
-    } else {
-      if (offlinePlayer == null || !offlinePlayer.isOnline()) {
-        return "";
-      }
-      r = getRegion(((Player) offlinePlayer).getLocation());
-    }
-
-    if (r == null) {
-      return "";
-    }
-
-    switch (params) {
-      case "region_name":
-        return r.getId();
-      case "region_owner":
-        Set<String> o = r.getOwners().getPlayerDomain().getPlayers();
-        return o == null ? "" : String.join(", ", o);
-      case "region_owner_groups":
-        return r.getOwners().toGroupsString();
-      case "region_members":
-        Set<String> m = r.getMembers().getPlayers();
-        return m == null ? "" : String.join(", ", m);
-      case "region_members_groups":
-        return r.getMembers().toGroupsString();
-      case "region_flags":
-        return r.getFlags().entrySet().toString();
-    }
-
-    return null;
-  }
-
-  private ProtectedRegion getRegion(Location loc) {
-    if (loc == null) return null;
-    ApplicableRegionSet ars = worldguard.getRegionManager(loc.getWorld()).getApplicableRegions(loc);
-    return ars.getRegions().stream().findFirst().orElse(null);
-  }
-
-  // world,x,y,z
-  private Location deserializeLoc(String locString) {
-    if (!locString.contains(",")) {
-      return null;
-    }
-    String[] s = locString.split(",");
-    try {
-      return new Location(
-          Bukkit.getWorld(s[0]),
-          Double.parseDouble(s[1]),
-          Double.parseDouble(s[2]),
-          Double.parseDouble(s[3]));
-    } catch (Exception e) {
-    }
-    return null;
-  }
 
   @Override
   public String getName() {
@@ -126,4 +55,70 @@ public class WorldGuardExpansion extends PlaceholderExpansion {
   public String getIdentifier() {
     return IDENTIFIER;
   }
+
+  @Override
+  public boolean canRegister() {
+    if (!Bukkit.getPluginManager().isPluginEnabled(NAME)) return false;
+    worldguard = (WorldGuardPlugin) Bukkit.getServer().getPluginManager().getPlugin(NAME);
+    return worldguard != null && super.register();
+  }
+
+  @Override
+  public String onRequest(OfflinePlayer player, String params) {
+    ProtectedRegion region;
+    String[] args;
+    if (params.contains(":")) {
+      args = params.split(":");
+      params = args[0];
+      region = getRegion(deserializeLoc(args[1]));
+    } else {
+      if (player == null || !player.isOnline()) return "";
+      region = getRegion(player.getPlayer().getLocation());
+    }
+
+    if (region == null) return "";
+    switch (params) {
+      case "region_name":
+        return region.getId();
+      case "region_owner":
+        Set<String> owners = region.getOwners().getPlayerDomain().getPlayers();
+        return owners == null ? "" : String.join(", ", owners);
+      case "region_owner_groups":
+        return region.getOwners().toGroupsString();
+      case "region_members":
+        Set<String> members = region.getMembers().getPlayers();
+        return members == null ? "" : String.join(", ", members);
+      case "region_members_groups":
+        return region.getMembers().toGroupsString();
+      case "region_flags":
+        return region.getFlags().entrySet().toString();
+    }
+    return null;
+  }
+
+  private ProtectedRegion getRegion(Location location) {
+    if (location == null) return null;
+    ApplicableRegionSet regionSet = worldguard.getRegionManager(location.getWorld()).getApplicableRegions(location);
+    return regionSet.getRegions().stream().findFirst().orElse(null);
+  }
+
+  private Location deserializeLoc(String string) {
+    if (!string.contains(",")) return null;
+    String[] splits = string.split(",");
+    try {
+      return new Location(
+          Bukkit.getWorld(splits[0]),
+          parseDouble(splits[1]),
+          parseDouble(splits[2]),
+          parseDouble(splits[3])
+      );
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
+
+  private double parseDouble(String string) throws NumberFormatException {
+    return Double.parseDouble(string);
+  }
+
 }
